@@ -34,8 +34,7 @@ fileList = [
 fileList = fileList
 speedThresh = 5 # cm/s, to discard spikes during stillness
 
-#hdf5Dir = '/home/dustin/Documents/hdf5_v1/' # Load data from this folder
-hdf5Dir = '/home/fetterhoff/atlas/RM_45max/combined_hdf5_from_raw_gsp2_removedInfSR/'
+hdf5Dir = '/home/dustin/Documents/data/combined_hdf5_from_raw_revision_v3/'
 combinedResultDir = hdf5Dir+'trajectory_plots/' # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
@@ -57,22 +56,23 @@ all_places_cm = np.array([])
 all_maze_type = np.array([])
 
 #%% Load data for each session
-for il in np.arange(len(fileList)):
-    folderName = fileList[il]
-    session = folderName[0][-9:]
-    print(session)
+for il, s in enumerate(fileList):
+    session = s[0]
+    print(session) # current session
+
+    sd = hdf5Dir+session+'/' # session directory
 
     # Load the necessary files
-    f1 = hdf5Dir+session+'_dat.h5'
-    spikeDF = pd.read_hdf(f1, 'spikeDF')
+#    f1 = hdf5Dir+session+'_dat.h5'
+#    spikeDF = pd.read_hdf(f1, 'spikeDF')
 
-    f2 = hdf5Dir+session+'_laps_traj.h5'
+    f2 = sd+session+'_laps_traj.h5'
     lapsDF = pd.read_hdf(f2, 'lapsDF')
     trajDF = pd.read_hdf(f2, 'trj')
     lapsDB = np.array(lapsDF)
 
-    f3 = hdf5Dir+session+'_resultsDB.h5'
-    cellResultsDB = pd.read_hdf(f3, 'cellResultsDB')
+#    f3 = hdf5Dir+session+'_resultsDB.h5'
+#    cellResultsDB = pd.read_hdf(f3, 'cellResultsDB')
 
     #%% Plot trajectory for each lap
     fig, ax = pl.subplots(4,10,figsize=(6.65,2.5), sharex=True, sharey=True)
@@ -179,7 +179,7 @@ fig.tight_layout()
 
 dictnc = {1:'r', -1:'b', 2:'m', -2:'c'}
 
-for mt,c in dictnc.iteritems():
+for mt,c in dictnc.items():
     bins1 = np.linspace(-0.5,0.55,21)
     hi, _ = np.histogram(all_vr_y[fhr & (all_maze_type==mt)],bins1,density=False)
     ax[0].plot(bins1[:-1],hi.astype(float)/hi.sum(),c)
