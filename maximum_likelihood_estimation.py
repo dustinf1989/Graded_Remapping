@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 
@@ -9,6 +9,7 @@ D. Fetterhoff, A. Sobolev & C. Leibold.
 All analysis code was written by D. Fetterhoff
 
 """
+
 import os
 import glob
 import numpy as np
@@ -83,8 +84,8 @@ mazeTypeList = ['R', 'L', 'R*', 'L*']
 colors = ('r', 'b', 'm', 'c') # Colors for each maze-type
 mazeSegList = ['Entire Maze', 'First  Hallway', 'First Corner', 'Middle Hallway', 'Last Corner', 'Last Hallway']
 
-# Folder containing the data to be analyzed
-hdf5Dir = '/home/dustin/Documents/data/revised_submission/'
+# Load data from this folder
+hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
 
 # Create a results subfolder inside the data folder
 combinedResultDir = hdf5Dir+'mle_results_{}gamma/'.format(gamma) # Save in subdirectory
@@ -95,20 +96,20 @@ if not os.path.exists(combinedResultDir):
 df_count = pd.DataFrame()
 
 # MLE percent matrices with all 4 maze-types
-mle_sess = np.zeros([18, 4, 4])
-mle_sess_fh = np.zeros([18, 4, 4])
-mle_sess_fc = np.zeros([18, 4, 4])
-mle_sess_mh = np.zeros([18, 4, 4])
-mle_sess_lc = np.zeros([18, 4, 4])
-mle_sess_lh = np.zeros([18, 4, 4])
+mle_sess = np.zeros([len(fileList), len(mazeTypeList), len(mazeTypeList)])
+mle_sess_fh = np.zeros([len(fileList), len(mazeTypeList), len(mazeTypeList)]) # First hallway
+mle_sess_fc = np.zeros([len(fileList), len(mazeTypeList), len(mazeTypeList)]) # First corner
+mle_sess_mh = np.zeros([len(fileList), len(mazeTypeList), len(mazeTypeList)]) # Middle Hallway
+mle_sess_lc = np.zeros([len(fileList), len(mazeTypeList), len(mazeTypeList)]) # Last Corner
+mle_sess_lh = np.zeros([len(fileList), len(mazeTypeList), len(mazeTypeList)]) # Last Hallway
 
 # MLE percent matrices when excluding the source = pattern comparisions
-mle_ex_sess = np.zeros([18, 4, 4])
-mle_ex_sess_fh = np.zeros([18, 4, 4])
-mle_ex_sess_fc = np.zeros([18, 4, 4])
-mle_ex_sess_mh = np.zeros([18, 4, 4])
-mle_ex_sess_lc = np.zeros([18, 4, 4])
-mle_ex_sess_lh = np.zeros([18, 4, 4])
+mle_ex_sess = np.zeros([len(fileList), len(mazeTypeList), len(mazeTypeList)])
+mle_ex_sess_fh = np.zeros([len(fileList), len(mazeTypeList), len(mazeTypeList)])
+mle_ex_sess_fc = np.zeros([len(fileList), len(mazeTypeList), len(mazeTypeList)])
+mle_ex_sess_mh = np.zeros([len(fileList), len(mazeTypeList), len(mazeTypeList)])
+mle_ex_sess_lc = np.zeros([len(fileList), len(mazeTypeList), len(mazeTypeList)])
+mle_ex_sess_lh = np.zeros([len(fileList), len(mazeTypeList), len(mazeTypeList)])
 
 # Standardize many plotting parmeters
 pl.rcParams.update({'font.size': 6, 'xtick.labelsize':6, 'ytick.labelsize':6, 'legend.fontsize':6, 'axes.facecolor':'white', 'lines.linewidth': 1.0, 'lines.markersize': 2.0, 'axes.labelsize': 6, 'figure.titlesize' : 6, 'axes.titlesize' : 'medium'})
@@ -356,7 +357,7 @@ for il, s in enumerate(fileList):
                 ax[o].plot((np.where(m == i+1)[0]+1)/10, -1*np.ones((m == i+1).sum()), '|', alpha=0.4, color=c, markersize=4)
                 ax[o].set_ylim([-1.7, 3.7])
                 ax[o].set_xlim([-1, xlim0/10])
-        ax[o].plot([(np.where(np.diff(m[:l1[-1]]) < -1)[0])/10, len(m)], [-1, -1], '|', color='k', markersize=4)
+        ax[o].plot([((np.where(np.diff(m[:l1[-1]]) < -1)[0])/10)[0], len(m)], [-1, -1], '|', color='k', markersize=4)
 
     ax[0].set_yticks([0, 1, 2, 3])
     ax[0].set_yticklabels(mazeTypeList)

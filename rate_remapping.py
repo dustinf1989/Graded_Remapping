@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 
@@ -40,12 +40,10 @@ fileList = [
     ['g2784_d3']
     ]
 
-#fileList = [fileList[7]] # Uncomment to test one file only; 11=g2018d3 used for Fig 3A-E
 plotSummary = True
 
 speedThresh = 5 # cm/s, to discard spikes during stillness
 dt = 0.05 # Sampling rate of the virtual trajectory
-
 
 totalMazeLength = 620 # measured from the setup
 xBins = np.linspace(1, 24, 80) # old: np.arange(1,24,0.29) np.linspace(1,24,80)
@@ -61,10 +59,10 @@ itmp.insert(0, 0)
 itmp.append(Nbins-1)
 iparts = [i+1 for i in itmp]
 
-# Folder containing the data to be analyzed
-hdf5Dir = '/home/dustin/Documents/data/revised_submission/'
+# Load data from this folder
+hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
 
-combinedResultDir = hdf5Dir+'rate_remapping_v2/' # Save in subdirectory
+combinedResultDir = hdf5Dir+'rate_remapping/' # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
 

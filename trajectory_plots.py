@@ -1,10 +1,15 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+
 This script generates all panels of Figure S2 in the manuscript
 "Graded Remapping of Hippocampal Ensembles under Sensory Conflicts" written by
 D. Fetterhoff, A. Sobolev & C. Leibold.
+
+All analysis code was written by D. Fetterhoff
+
 """
+
 import os
 import numpy as np
 import matplotlib.pyplot as pl
@@ -31,10 +36,11 @@ fileList = [
     ['g2784_d3']
     ]
 
-fileList = fileList
 speedThresh = 5 # cm/s, to discard spikes during stillness
 
-hdf5Dir = '/home/dustin/Documents/data/combined_hdf5_from_raw_revision_v3/'
+# Load data from this folder
+hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+
 combinedResultDir = hdf5Dir+'trajectory_plots/' # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
@@ -62,17 +68,10 @@ for il, s in enumerate(fileList):
 
     sd = hdf5Dir+session+'/' # session directory
 
-    # Load the necessary files
-#    f1 = hdf5Dir+session+'_dat.h5'
-#    spikeDF = pd.read_hdf(f1, 'spikeDF')
-
     f2 = sd+session+'_laps_traj.h5'
     lapsDF = pd.read_hdf(f2, 'lapsDF')
     trajDF = pd.read_hdf(f2, 'trj')
     lapsDB = np.array(lapsDF)
-
-#    f3 = hdf5Dir+session+'_resultsDB.h5'
-#    cellResultsDB = pd.read_hdf(f3, 'cellResultsDB')
 
     #%% Plot trajectory for each lap
     fig, ax = pl.subplots(4,10,figsize=(6.65,2.5), sharex=True, sharey=True)
@@ -221,7 +220,7 @@ lhr = (all_places_cm >= bd[3]) & spmask
 
 pl.figure(figsize=(1.5,1.4))
 x = [0, 1, 2, 3, 4]
-for mt,c in dictnc.iteritems():
+for mt,c in dictnc.items():
     mm = all_maze_type == mt
     sp_mean = np.array([all_speed[fhr & mm].mean(axis=0), all_speed[fcr & mm].mean(axis=0), all_speed[mhr & mm].mean(axis=0), all_speed[lcr & mm].mean(axis=0), all_speed[lhr & mm].mean(axis=0)])
     sp_std = np.array([all_speed[fhr & mm].std(axis=0), all_speed[fcr & mm].std(axis=0), all_speed[mhr & mm].std(axis=0), all_speed[lcr & mm].std(axis=0), all_speed[lhr & mm].std(axis=0)])

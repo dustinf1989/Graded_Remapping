@@ -1,6 +1,7 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+
 This script generates all panels of Figure 4 and S4 in the manuscript
 "Graded Remapping of Hippocampal Ensembles under Sensory Conflicts" written by
 D. Fetterhoff, A. Sobolev & C. Leibold.
@@ -39,9 +40,6 @@ fileList = [
     ['g2784_d3'] #17
     ]
 
-# Select sessions with the most place cells
-fileList6 = np.array(fileList)[[0, 5, 6, 10, 13, 17]]
-
 fileListSim = [
     ['g0397_ss1'],
     ['g0397_ss2'],
@@ -51,10 +49,10 @@ fileListSim = [
     ['g2784_ss1']
     ]
 
-# Folder containing the data to be analyzed
-hdf5Dir = '/home/dustin/Documents/data/revised_submission/'
+# Load data from this folder
+hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
 
-combinedResultDir = hdf5Dir+'pop_vec_analysis_v2/' # Save in subdirectory
+combinedResultDir = hdf5Dir+'pop_vec_analysis/' # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
 
@@ -64,7 +62,8 @@ best6 = False # Set True for Fig. S5C-D
 
 if simSwap:
     fileList = fileListSim
-if best6:
+if best6: # Select sessions with the most place cells
+    fileList6 = np.array(fileList)[[0, 5, 6, 10, 13, 17]]
     fileList = fileList6
 else:
     fileList = fileList
@@ -215,6 +214,10 @@ for il, s in enumerate(fileList):
     #%% Plot place field matrices sorted by maze R
 
     if not (simSwap or best6 or toExcludeImageCells):
+        
+        pop_dir = combinedResultDir + 'population_plots/'
+        if not os.path.exists(pop_dir):
+            os.makedirs(pop_dir)
 
         peak_list1 = raw_mat1.argmax(axis=1)
         raw_mat1_plot = raw_mat1[peak_list1.argsort()]
@@ -238,7 +241,7 @@ for il, s in enumerate(fileList):
         axm3.set_xlabel('Track Position (cm)'); axm4.set_xlabel('Track Position (cm)')
         axm1.set_ylabel('Neuron #'); axm3.set_ylabel('Neuron #')
 
-        pl.savefig(combinedResultDir+'all_neural_pop_viridis_Rsort_{}.png'.format(session), format='png', dpi=300, bbox_inches='tight', pad_inches=0.05)
+        pl.savefig(pop_dir+'all_neural_pop_viridis_Rsort_{}.png'.format(session), format='png', dpi=300, bbox_inches='tight', pad_inches=0.05)
         pl.close()
 
         # Plot place field matrices sorted by maze L
@@ -265,7 +268,7 @@ for il, s in enumerate(fileList):
         axm3.set_xlabel('Track Position (cm)'); axm4.set_xlabel('Track Position (cm)')
         axm1.set_ylabel('Neuron #'); axm3.set_ylabel('Neuron #')
 
-        pl.savefig(combinedResultDir+'all_neural_pop_viridis_Lsort_{}.png'.format(session), format='png', dpi=300, bbox_inches='tight', pad_inches=0.05)
+        pl.savefig(pop_dir+'all_neural_pop_viridis_Lsort_{}.png'.format(session), format='png', dpi=300, bbox_inches='tight', pad_inches=0.05)
         pl.close()
 
 #%% pop_vec correlation - all vs shuffled
@@ -512,9 +515,6 @@ if not (toExcludeImageCells or simSwap or best6):
              np.mean(temp_mat[:, 14]), np.mean(temp_mat[:, 15])]]
         im = axs[i].imshow(k, 'Oranges', vmin=0, vmax=0.6) # need to change the color bar ticks below
 
-        axs[i].set_xticklabels([0, 1, 2, 3])
-        axs[i].set_yticklabels([0, 1, 2, 3])
-
         axs[i].set(
             xticks=[0, 1, 2, 3], xticklabels=(mazeTypeList),
             yticks=[0, 1, 2, 3], yticklabels=(mazeTypeList))
@@ -574,8 +574,6 @@ if (simSwap or best6):
         fig.colorbar(im, cax=cbar_x, ticks=[0, 0.6]) # must match the vmin and vmax above
         cbar_x.tick_params(labelsize=6)
         cbar_x.set_ylabel("r", rotation=0, labelpad=-13)
-        axw[i].set_xticklabels([0, 1, 2, 3])
-        axw[i].set_yticklabels([0, 1, 2, 3])
 
         axw[i].set(
             xticks=[0, 1, 2, 3], xticklabels=(mazeTypeList),

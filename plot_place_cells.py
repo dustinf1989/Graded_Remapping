@@ -1,7 +1,7 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-This script generates panels B-I of Figure 1 and Fig. S3 in the manuscript
+This script generates Figure 1B-I and Fig. S3 in the manuscript
 "Graded Remapping of Hippocampal Ensembles under Sensory Conflicts" written by
 D. Fetterhoff, A. Sobolev & C. Leibold.
 
@@ -40,10 +40,10 @@ fileList = [
 fileList = fileList
 speedThresh = 5 # cm/s, to discard spikes during stillness
 
-# Folder containing the data to be analyzed
-hdf5Dir = '/home/dustin/Documents/data/revised_submission/'
+# Load data from this folder
+hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
 
-combinedResultDir = hdf5Dir+'place_cells_py37_lh/' # Save in subdirectory
+combinedResultDir = hdf5Dir+'place_cells/' # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
 
