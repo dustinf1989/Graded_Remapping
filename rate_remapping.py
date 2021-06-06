@@ -12,6 +12,7 @@ All analysis code was written by D. Fetterhoff
 
 import os
 import glob
+import json
 import itertools as it
 import numpy as np
 import matplotlib.pyplot as pl
@@ -59,10 +60,12 @@ itmp.insert(0, 0)
 itmp.append(Nbins-1)
 iparts = [i+1 for i in itmp]
 
-# Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+with open("config.json") as f:
+    config = json.load(f)
 
-combinedResultDir = hdf5Dir+'rate_remapping/' # Save in subdirectory
+# Load data from this folder
+hdf5Dir = config['datasource']
+combinedResultDir = os.path.join(config['results'], 'rate_remapping') # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
 
@@ -78,11 +81,11 @@ for il, s in enumerate(fileList):
     session = s[0]
     print(session) # current session
 
-    sd = hdf5Dir+session+'/' # session directory
+    sd = os.path.join(hdf5Dir, session) # session directory
 
     # Build a DataFrame using all tetrode (TT) files
     spikeDF = pd.DataFrame()
-    for mat_name in glob.glob(sd+'*TT*.mat'):
+    for mat_name in glob.glob(os.path.join(sd, '*TT*.mat')): # loop through all neuron files
         m = loadmat(mat_name)
 
         frame = pd.DataFrame([[m['file'][0], m['times'][0], m['vr_x'][0], m['vr_y'][0], m['real_cm'][0], m['speed_cms'][0], m['lap_num'][0],
@@ -93,13 +96,13 @@ for il, s in enumerate(fileList):
         spikeDF = spikeDF.append(frame)
     spikeDF.sort_index(inplace=True)
 
-    f2 = sd+session+'_laps_traj.h5'
+    f2 = os.path.join(sd, session+'_laps_traj.h5')
     trajDF = pd.read_hdf(f2, 'trj') # DataFrame of times/places/speed for each lap in VR
     # LapsDF maze_type dictionary: {1:R, -1:L, 2: R*, -2: L*}
     lapsDF = pd.read_hdf(f2, 'lapsDF')
     lapsDB = np.array(lapsDF) # Keep values as matrix
 
-    f3 = sd+session+'_PCresultsDB.h5'
+    f3 = os.path.join(sd, session+'_PCresultsDB.h5')
     cellResultsDB = pd.read_hdf(f3, 'cellResultsDB')
 
     nPlaceFields = 0 # Count the number of place fields
@@ -197,7 +200,7 @@ for il, s in enumerate(fileList):
 #%% Save to csv files
 if plotSummary:
 
-    df_count.to_csv(combinedResultDir+'table_S1_place_cell_field_counts.csv')
+    df_count.to_csv(os.path.join(combinedResultDir, 'table_S1_place_cell_field_counts.csv'))
 
     #%% Peak comparison data to assess rate remapping
     df_ci_rateRemapping = pd.DataFrame([])
@@ -274,7 +277,7 @@ if plotSummary:
     ax[15].set_xlabel('L*', labelpad=0)
 
     df_ci_rateRemapping.to_csv(combinedResultDir+'table_S2_rate_remapping_single_peaks_CI.csv')
-    pl.savefig(combinedResultDir+'fig_2A_rate_remapping_single_peaks.pdf', format='pdf', bbox_inches='tight', pad_inches=0.05)
+    pl.savefig(os.path.join(combinedResultDir, 'fig_2A_rate_remapping_single_peaks.pdf'), format='pdf', bbox_inches='tight', pad_inches=0.05)
     pl.close()
 
     #%% Overlap summary figure
@@ -437,6 +440,6 @@ if plotSummary:
         ax[i].spines['bottom'].set_visible(False)
         ax[i].tick_params(axis=u'both', which=u'both', length=0)
 
-    df_overlap_stats.to_csv(combinedResultDir+'table_S3_overlap_KW_MWU_stats.csv')
-    pl.savefig(combinedResultDir+'fig_2BCD_rate_remap_overlap_summary_.pdf', format='pdf', bbox_inches='tight', pad_inches=0.05)
+    df_overlap_stats.to_csv(os.path.join(combinedResultDir, 'table_S3_overlap_KW_MWU_stats.csv'))
+    pl.savefig(os.path.join(combinedResultDir, 'fig_2BCD_rate_remap_overlap_summary_.pdf'), format='pdf', bbox_inches='tight', pad_inches=0.05)
     pl.close()

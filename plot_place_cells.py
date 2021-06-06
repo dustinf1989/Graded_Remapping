@@ -10,6 +10,7 @@ All analysis code was written by D. Fetterhoff
 """
 import os
 import glob
+import json
 import numpy as np
 import matplotlib.pyplot as pl
 import pandas as pd
@@ -40,10 +41,12 @@ fileList = [
 fileList = fileList
 speedThresh = 5 # cm/s, to discard spikes during stillness
 
-# Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+with open("config.json") as f:
+    config = json.load(f)
 
-combinedResultDir = hdf5Dir+'place_cells/' # Save in subdirectory
+# Load data from this folder
+hdf5Dir = config['datasource']
+combinedResultDir = os.path.join(config['results'], 'place_cells') # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
 
@@ -63,11 +66,11 @@ for il, s in enumerate(fileList):
     session = s[0]
     print(session) # current session
 
-    sd = hdf5Dir+session+'/' # session directory
+    sd = os.path.join(hdf5Dir, session) # session directory
 
     # Build a DataFrame using all tetrode (TT) files
     spikeDF = pd.DataFrame()
-    for mat_name in glob.glob(sd+'*TT*.mat'):
+    for mat_name in glob.glob(os.path.join(sd, '*TT*.mat')): # loop through all neuron files
         m = loadmat(mat_name)
 
         frame = pd.DataFrame([[m['file'][0], m['times'][0], m['vr_x'][0], m['vr_y'][0], m['real_cm'][0], m['speed_cms'][0], m['lap_num'][0],
@@ -78,13 +81,13 @@ for il, s in enumerate(fileList):
         spikeDF = spikeDF.append(frame)
     spikeDF.sort_index(inplace=True)
 
-    f3 = sd+session+'_PCresultsDB.h5'
+    f3 = os.path.join(sd, session+'_PCresultsDB.h5')
     cellResultsDB = pd.read_hdf(f3, 'cellResultsDB')
 
     #%% Plot neurons as examples
     for q, cell_id in enumerate(spikeDF.T):
         sp = spikeDF.loc[cell_id]
-        title = combinedResultDir + session + '_' + sp.file[:-2]
+        title = os.path.join(combinedResultDir, session + '_' + sp.file[:-2])
         session_list.append(session)
         maze_seg_code.append(sp.segment_types)
         if toPlotAllNeurons:
@@ -202,7 +205,7 @@ box = ax[5].get_position()
 box.x0, box.y0, box.y1 = 0.7, 0.26, 0.5
 ax[5].set_position(box)
 
-pl.savefig(combinedResultDir+'fig_1HI_pieChart.pdf', format='pdf', bbox_inches='tight', pad_inches=0.01)
+pl.savefig(os.path.join(combinedResultDir, 'fig_1HI_pieChart.pdf'), format='pdf', bbox_inches='tight', pad_inches=0.01)
 pl.close()
 
 #%% Pie for each gerbil
@@ -264,5 +267,5 @@ for gid in gerbil_names:
         ax[5].legend(['RR*-dir', 'LL*-dir', 'RL*-im', 'LR*-im'], loc='upper right')
         ax[1].legend(labels, loc='upper left', bbox_to_anchor=(0.3, 0.83))
 
-    pl.savefig(combinedResultDir+'fig_S3_pieChartByGerbil_{}.pdf'.format(gid), format='pdf', bbox_inches='tight', pad_inches=0.01)
+    pl.savefig(os.path.join(combinedResultDir, 'fig_S3_pieChartByGerbil_{}.pdf'.format(gid)), format='pdf', bbox_inches='tight', pad_inches=0.01)
     pl.close()

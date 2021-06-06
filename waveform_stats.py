@@ -11,19 +11,22 @@ All analysis code was written by D. Fetterhoff
 """
 
 import os
+import json
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as pl
 import seaborn as sns
 
-# Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+with open("config.json") as f:
+    config = json.load(f)
 
-combinedResultDir = hdf5Dir+'waveform_stats/' # Save in subdirectory
+# Load data from this folder
+hdf5Dir = config['datasource']
+combinedResultDir = os.path.join(config['results'], 'waveform_stats') # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
 
-wavedf = pd.read_csv(hdf5Dir+'allwavecombined_final.csv')
+wavedf = pd.read_csv(os.path.join(hdf5Dir, 'allwavecombined_final.csv'))
 wavedf['neuron_type'] = 0
 fil=(wavedf.spike_ratio < 1.5)
 wavedf.loc[fil, 'neuron_type'] = 'INT'
@@ -44,7 +47,7 @@ ajp.ax_joint.set_xlabel('Spike Ratio')
 ajp.ax_joint.set_ylabel('Log of Mean Firing Rate (Hz)')
 ajp.ax_marg_x.axvline(1.5,color='C1',alpha=0.5)
 ajp.ax_joint.set_ylim(yl1, yl2)
-ajp.savefig(combinedResultDir+'fig_S1C_mfr_spike_ratio.pdf',format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.05)
+ajp.savefig(os.path.join(combinedResultDir, 'fig_S1C_mfr_spike_ratio.pdf'),format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.05)
 pl.close()
 perc_lost = (wavedf.spike_ratio > 10).sum() / float(len(wavedf)) *100
 print('{}% of neurons not shown (SR > 10)'.format(perc_lost))
@@ -54,5 +57,5 @@ print('{}% of neurons not shown (SR > 10)'.format(perc_lost))
 ax = sns.catplot(x='neuron_type', y='spike_width_ms', kind='boxen', data=wavedf, height=2.2)
 ax.set_ylabels('Spike Width (ms)')
 ax.set_xlabels('Neuron Type')
-ax.savefig(combinedResultDir+'fig_S1D_spike_width.pdf',format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.05)
+ax.savefig(os.path.join(combinedResultDir, 'fig_S1D_spike_width.pdf'),format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.05)
 pl.close()
