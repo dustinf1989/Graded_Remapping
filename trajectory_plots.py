@@ -11,6 +11,7 @@ All analysis code was written by D. Fetterhoff
 """
 
 import os
+import json
 import numpy as np
 import matplotlib.pyplot as pl
 import pandas as pd
@@ -38,10 +39,12 @@ fileList = [
 
 speedThresh = 5 # cm/s, to discard spikes during stillness
 
-# Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+with open("config.json") as f:
+    config = json.load(f)
 
-combinedResultDir = hdf5Dir+'trajectory_plots/' # Save in subdirectory
+# Load data from this folder
+hdf5Dir = config['datasource']
+combinedResultDir = os.path.join(config['results'], 'trajectory_plots') # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
 
@@ -66,9 +69,9 @@ for il, s in enumerate(fileList):
     session = s[0]
     print(session) # current session
 
-    sd = hdf5Dir+session+'/' # session directory
+    sd = os.path.join(hdf5Dir, session) # session directory
 
-    f2 = sd+session+'_laps_traj.h5'
+    f2 = os.path.join(sd, session+'_laps_traj.h5')
     lapsDF = pd.read_hdf(f2, 'lapsDF')
     trajDF = pd.read_hdf(f2, 'trj')
     lapsDB = np.array(lapsDF)
@@ -156,7 +159,7 @@ for il, s in enumerate(fileList):
 
     ax[3,1].legend(['First Hall','First Corner','Middle Hall','Last Corner','Last Hall'])
 
-    pl.savefig(combinedResultDir+'fig_S2A_lap_trajectories_{}.pdf'.format(session),format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.01)
+    pl.savefig(os.path.join(combinedResultDir, 'fig_S2A_lap_trajectories_{}.pdf'.format(session)),format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.01)
     pl.close()
 
     all_vr_y = np.append(all_vr_y, places_xy[1,:] * -1)
@@ -206,7 +209,7 @@ for i, nm in enumerate(['First hall', 'Middle hall', 'Last hall']):
 ax[0].set_ylabel('PDF')
 pl.setp(ax, xticks=[-0.5,0.5], xticklabels=['Left','Right'])
 
-pl.savefig(combinedResultDir+'fig_S2C_y_position_hist.pdf',format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.01)
+pl.savefig(os.path.join(combinedResultDir, 'fig_S2C_y_position_hist.pdf'), format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.01)
 pl.close()
 
 #%% average speed by maze segment
@@ -230,5 +233,5 @@ pl.legend(['R','L','R*','L*'])
 pl.xticks(np.arange(5), ('First Hall', 'First Corner', 'Middle Hall', 'Last Corner', 'Last Hall'),rotation=45)
 pl.ylabel('Average Speed (cm/s)')
 
-pl.savefig(combinedResultDir+'fig_S2B_avg_speed_by_maze_segment.pdf',format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.05)
+pl.savefig(os.path.join(combinedResultDir, 'fig_S2B_avg_speed_by_maze_segment.pdf'),format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.05)
 pl.close()

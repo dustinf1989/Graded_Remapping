@@ -12,6 +12,7 @@ All analysis code was written by D. Fetterhoff
 
 import os
 import glob
+import json
 import numpy as np
 import matplotlib.pyplot as pl
 import pandas as pd
@@ -84,11 +85,12 @@ mazeTypeList = ['R', 'L', 'R*', 'L*']
 colors = ('r', 'b', 'm', 'c') # Colors for each maze-type
 mazeSegList = ['Entire Maze', 'First  Hallway', 'First Corner', 'Middle Hallway', 'Last Corner', 'Last Hallway']
 
-# Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+with open("config.json") as f:
+    config = json.load(f)
 
-# Create a results subfolder inside the data folder
-combinedResultDir = hdf5Dir+'mle_results_{}gamma/'.format(gamma) # Save in subdirectory
+# Load data from this folder
+hdf5Dir = config['datasource']
+combinedResultDir = os.path.join(config['results'], 'mle_results_{}gamma/'.format(gamma)) # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
 
@@ -119,11 +121,11 @@ for il, s in enumerate(fileList):
     session = s[0]
     print(session) # current session
 
-    sd = hdf5Dir+session+'/' # session directory
+    sd = os.path.join(hdf5Dir, session) # session directory
 
     # Build a DataFrame using all tetrode (TT) files
     spikeDF = pd.DataFrame()
-    for mat_name in glob.glob(sd+'*TT*.mat'):
+    for mat_name in glob.glob(os.path.join(sd, '*TT*.mat')): # loop through all neuron files
         m = loadmat(mat_name)
 
         frame = pd.DataFrame([[m['file'][0], m['times'][0], m['vr_x'][0], m['vr_y'][0], m['real_cm'][0], m['speed_cms'][0], m['lap_num'][0],
@@ -134,7 +136,7 @@ for il, s in enumerate(fileList):
         spikeDF = spikeDF.append(frame)
     spikeDF.sort_index(inplace=True)
 
-    f2 = sd+session+'_laps_traj.h5'
+    f2 = os.path.join(sd, session+'_laps_traj.h5')
     trajDF = pd.read_hdf(f2, 'trj') # DataFrame of times/places/speed for each lap in VR
     # LapsDF maze_type dictionary: {1:R, -1:L, 2: R*, -2: L*}
     lapsDF = pd.read_hdf(f2, 'lapsDF')
@@ -363,7 +365,7 @@ for il, s in enumerate(fileList):
     ax[0].set_yticklabels(mazeTypeList)
     ax[0].set_xticks([0, xlim0/20, xlim0/10])
 
-    fig.savefig(combinedResultDir+'Fig3A_mle_timesteps_{}.pdf'.format(session), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+    fig.savefig(os.path.join(combinedResultDir, 'Fig3A_mle_timesteps_{}.pdf'.format(session)), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
     pl.close(fig)
 
     #%% MLE while excuding the same maze as pattern (ex = excluding same maze-type)
@@ -427,7 +429,7 @@ for il, s in enumerate(fileList):
 #%% Plot MLE over all sessions
 if toPlotAllSessions:
 
-    df_count.to_csv(combinedResultDir+'table_S1_place_cell_field_counts.csv')
+    df_count.to_csv(os.path.join(combinedResultDir, 'table_S1_place_cell_field_counts.csv'))
 
     # plot as percentages
     pctAll = [mle_sess.mean(axis=0), mle_sess_fh.mean(axis=0), mle_sess_fc.mean(axis=0), mle_sess_mh.mean(axis=0), mle_sess_lc.mean(axis=0), mle_sess_lh.mean(axis=0)]
@@ -457,7 +459,7 @@ if toPlotAllSessions:
     pl.ylabel("Maximum Likelihood Estimate from Pattern Data", labelpad=1)
     pl.xlabel("Maximum Likelihood Estimate from Source Data", labelpad=0)
 
-    fig.savefig(combinedResultDir+'Fig3B_allSessions_withReal_mle_gamma{}.pdf'.format(gamma), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+    fig.savefig(os.path.join(combinedResultDir,'Fig3B_allSessions_withReal_mle_gamma{}.pdf'.format(gamma)), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
     pl.close(fig)
 
     #%% Plot MLE excluding same maze-type
@@ -486,5 +488,5 @@ if toPlotAllSessions:
     pl.ylabel("Maximum Likelihood Estimate from Pattern Data", labelpad=1)
     pl.xlabel("Maximum Likelihood Estimate from Source Data", labelpad=0)
 
-    fig.savefig(combinedResultDir+'Fig3C_allSessions_noReal_mle_gamma{}.pdf'.format(gamma), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+    fig.savefig(os.path.join(combinedResultDir, 'Fig3C_allSessions_noReal_mle_gamma{}.pdf'.format(gamma)), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
     pl.close(fig)

@@ -11,6 +11,7 @@ All analysis code was written by D. Fetterhoff
 """
 import os
 import glob
+import json
 import numpy as np
 import matplotlib.pyplot as pl
 from scipy.io import loadmat
@@ -36,10 +37,12 @@ fileList = [
     ['g2784_d3']
     ]
 
-# Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+with open("config.json") as f:
+    config = json.load(f)
 
-combinedResultDir = hdf5Dir+'waveform_stats/' # Save in subdirectory
+# Load data from this folder
+hdf5Dir = config['datasource']
+combinedResultDir = os.path.join(config['results'], 'waveform_stats') # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
 
@@ -53,9 +56,9 @@ for il, s in enumerate(fileList):
     session = s[0]
     print(session) # current session
 
-    sd = hdf5Dir+session+'/' # session directory
+    sd = os.path.join(hdf5Dir, session) # session directory
 
-    for mat_name in glob.glob(sd+'*TT*.mat'): # loop through all neuron files
+    for mat_name in glob.glob(os.path.join(sd, '*TT*.mat')): # loop through all neuron files
         m = loadmat(mat_name)
         iso_dist = np.append(iso_dist, m['isolation_distance'][0][0]) # save isolation distances
 
@@ -73,5 +76,5 @@ pl.xlabel('Isolation Distance')
 pl.ylabel('Cumulative Distribution')
 pl.xlim([0,100])
 
-pl.savefig(combinedResultDir+'Fig_S1B_IsolationDistance.pdf',format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.05)
+pl.savefig(os.path.join(combinedResultDir, 'Fig_S1B_IsolationDistance.pdf'),format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.05)
 pl.close()

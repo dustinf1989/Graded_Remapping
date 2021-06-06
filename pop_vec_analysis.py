@@ -13,6 +13,7 @@ All analysis code was written by D. Fetterhoff
 """
 import os
 import glob
+import json
 import itertools as it
 import numpy as np
 import matplotlib.pyplot as pl
@@ -49,10 +50,12 @@ fileListSim = [
     ['g2784_ss1']
     ]
 
-# Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+with open("config.json") as f:
+    config = json.load(f)
 
-combinedResultDir = hdf5Dir+'pop_vec_analysis/' # Save in subdirectory
+# Load data from this folder
+hdf5Dir = config['datasource']
+combinedResultDir = os.path.join(config['results'], 'pop_vec_analysis') # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
 
@@ -97,11 +100,11 @@ for il, s in enumerate(fileList):
     session = s[0]
     print(session) # current session
 
-    sd = hdf5Dir+session+'/' # session directory
+    sd = os.path.join(hdf5Dir, session) # session directory
 
     # Build a DataFrame using all tetrode (TT) files
     spikeDF = pd.DataFrame()
-    for mat_name in glob.glob(sd+'*TT*.mat'):
+    for mat_name in glob.glob(os.path.join(sd, '*TT*.mat')): # loop through all neuron files
         m = loadmat(mat_name)
 
         frame = pd.DataFrame([[m['file'][0], m['times'][0], m['vr_x'][0], m['vr_y'][0], m['real_cm'][0], m['speed_cms'][0], m['lap_num'][0],
@@ -112,13 +115,13 @@ for il, s in enumerate(fileList):
         spikeDF = spikeDF.append(frame)
     spikeDF.sort_index(inplace=True)
 
-    f2 = sd+session+'_laps_traj.h5'
+    f2 = os.path.join(sd, session+'_laps_traj.h5')
     trajDF = pd.read_hdf(f2, 'trj') # DataFrame of times/places/speed for each lap in VR
     # LapsDF maze_type dictionary: {1:R, -1:L, 2: R*, -2: L*}
     lapsDF = pd.read_hdf(f2, 'lapsDF')
     lapsDB = np.array(lapsDF) # Keep values as matrix
 
-    f3 = sd+session+'_PCresultsDB.h5'
+    f3 = os.path.join(sd, session+'_PCresultsDB.h5')
     cellResultsDB = pd.read_hdf(f3, 'cellResultsDB')
 
     nPlaceFields = 0 # Count the number of place fields
@@ -214,8 +217,8 @@ for il, s in enumerate(fileList):
     #%% Plot place field matrices sorted by maze R
 
     if not (simSwap or best6 or toExcludeImageCells):
-        
-        pop_dir = combinedResultDir + 'population_plots/'
+
+        pop_dir = os.path.join(combinedResultDir, 'population_plots')
         if not os.path.exists(pop_dir):
             os.makedirs(pop_dir)
 
@@ -241,7 +244,7 @@ for il, s in enumerate(fileList):
         axm3.set_xlabel('Track Position (cm)'); axm4.set_xlabel('Track Position (cm)')
         axm1.set_ylabel('Neuron #'); axm3.set_ylabel('Neuron #')
 
-        pl.savefig(pop_dir+'all_neural_pop_viridis_Rsort_{}.png'.format(session), format='png', dpi=300, bbox_inches='tight', pad_inches=0.05)
+        pl.savefig(os.path.join(pop_dir, 'all_neural_pop_viridis_Rsort_{}.png'.format(session)), format='png', dpi=300, bbox_inches='tight', pad_inches=0.05)
         pl.close()
 
         # Plot place field matrices sorted by maze L
@@ -268,13 +271,13 @@ for il, s in enumerate(fileList):
         axm3.set_xlabel('Track Position (cm)'); axm4.set_xlabel('Track Position (cm)')
         axm1.set_ylabel('Neuron #'); axm3.set_ylabel('Neuron #')
 
-        pl.savefig(pop_dir+'all_neural_pop_viridis_Lsort_{}.png'.format(session), format='png', dpi=300, bbox_inches='tight', pad_inches=0.05)
+        pl.savefig(os.path.join(pop_dir, 'all_neural_pop_viridis_Lsort_{}.png'.format(session)), format='png', dpi=300, bbox_inches='tight', pad_inches=0.05)
         pl.close()
 
 #%% pop_vec correlation - all vs shuffled
 
 if not (simSwap or best6 or toExcludeImageCells):
-    df_count.to_csv(combinedResultDir+'table_S1_place_cell_counts_pop_vec.csv')
+    df_count.to_csv(os.path.join(combinedResultDir, 'table_S1_place_cell_counts_pop_vec.csv'))
 
 if (best6 or simSwap):
     fig, axx = pl.subplots(1, 2, figsize=(3.4, 1.4), sharey=True)
@@ -402,13 +405,13 @@ if not toExcludeImageCells:
     axx[1].legend()
 
 if toExcludeImageCells:
-    pl.savefig(combinedResultDir+'fig_4B_pop_vec_correlation_noImageCells.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+    pl.savefig(os.path.join(combinedResultDir, 'fig_4B_pop_vec_correlation_noImageCells.pdf'), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
 elif simSwap:
-    pl.savefig(combinedResultDir+'fig_S5A_pop_vec_correlation.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+    pl.savefig(os.path.join(combinedResultDir, 'fig_S5A_pop_vec_correlation.pdf'), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
 elif best6:
-    pl.savefig(combinedResultDir+'fig_S5C_pop_vec_correlation.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+    pl.savefig(os.path.join(combinedResultDir, 'fig_S5C_pop_vec_correlation.pdf'), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
 else:
-    pl.savefig(combinedResultDir+'fig_4A_pop_vec_correlation.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+    pl.savefig(os.path.join(combinedResultDir, 'fig_4A_pop_vec_correlation.pdf'), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
 pl.close(fig)
 
 #%% pop_vec correlation - all vs shuffled for each gerbil
@@ -472,7 +475,7 @@ if not (toExcludeImageCells or simSwap or best6): # Only do this is using 18 ses
             aq[ai].fill_between([bd[0], bd[1]], -.2, 1, facecolor='k', alpha=0.2)
             aq[ai].fill_between([bd[2], bd[3]], -.2, 1, facecolor='k', alpha=0.2)
 
-        pl.savefig(combinedResultDir+'fig_S5E_pop_vec_correlation_g{}.pdf'.format(gid), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+        pl.savefig(os.path.join(combinedResultDir, 'fig_S5E_pop_vec_correlation_g{}.pdf'.format(gid)), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
         pl.close(fig)
 
 #%% Plot the matrix for the poulation vector correlation divided by maze segment
@@ -527,7 +530,7 @@ if not (toExcludeImageCells or simSwap or best6):
     cbar_ax.tick_params(labelsize=6)
     cbar_ax.set_ylabel("r", rotation=0, labelpad=-13)
 
-    pl.savefig(combinedResultDir+'fig_4C_population_vector_correlation_bySegment_v.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+    pl.savefig(os.path.join(combinedResultDir, 'fig_4C_population_vector_correlation_bySegment_v.pdf'), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
     pl.close()
 
 #%% Plot the matrix for the poulation vector correlation divided by maze segment
@@ -582,8 +585,8 @@ if (simSwap or best6):
         axw[i].grid(False)
 
     if simSwap:
-        pl.savefig(combinedResultDir+'fig_S5B_population_vector_correlation_bySegment_simSwap.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+        pl.savefig(os.path.join(combinedResultDir, 'fig_S5B_population_vector_correlation_bySegment_simSwap.pdf'), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
         pl.close()
     if best6:
-        pl.savefig(combinedResultDir+'fig_S5D_population_vector_correlation_bySegment_best6.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+        pl.savefig(os.path.join(combinedResultDir, 'fig_S5D_population_vector_correlation_bySegment_best6.pdf'), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
         pl.close()
