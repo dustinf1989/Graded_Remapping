@@ -39,27 +39,20 @@ fileList = [
 speedThresh = 5 # cm/s, to discard spikes during stillness
 
 # Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+hdf5Dir = '/home/fetterhoff/Documents/graded_remapping_data/Graded_Remapping/'
 
 combinedResultDir = hdf5Dir+'trajectory_plots/' # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
 
-bd = [187.5, 275, 412.5, 500] # boundaries for all maze segments
+bd = [187.5, 275, 412.5, 500] # cm, boundaries for all maze segments
 
-totalMazeLength = 622 # measured from the setup
 pl.rcParams.update({'font.size': 6, 'xtick.labelsize':6, 'ytick.labelsize':6, 'legend.fontsize':6, 'axes.facecolor':'white', 'lines.linewidth': 1.0, 'lines.markersize': 2.0})
-maze_type_color_dict = {1:'r',-1:'b',2:'m',-2:'c'}
-numToTypeDict = {0 : 'None', 1: 'R', 2:'L',3:'R*', 4:'L*', 5:'LR*-im', 6:'LL*-dir', 7:'swap*', 8:'og', 9:'RR*-dir',10:'RL*-im',11:'3pk',12:'3pk',13:'3pk',14:'3pk',15:'4pk'}
 
-minWindow = 4 # Number of adjacent peak bins to keep cell
-session_list, maze_seg_code = [], []
-toPlotAllNeurons = False
-
-all_vr_y = np.array([])
-all_speed = np.array([])
-all_places_cm = np.array([])
-all_maze_type = np.array([])
+all_vr_y = np.array([]) # Save y-positions
+all_speed = np.array([]) # Save speed
+all_places_cm = np.array([]) # save places in cm
+all_maze_type = np.array([]) # Save maze type
 
 #%% Load data for each session
 for il, s in enumerate(fileList):
@@ -127,7 +120,7 @@ for il, s in enumerate(fileList):
             ax[it,qi].set_yticks([-4,0,4])
             ax[it, qi].set_title('lap '+str(i+1),pad=2,fontsize=6)
 
-            if np.logical_or(it==0,it==2):
+            if np.logical_or(it==0,it==2): # Plot outline for R & R* maze types
                 ax[it,qi].plot([0,0],[.5,-0.5],'k',alpha=1.0,linewidth=0.5)
                 ax[it,qi].plot([0,7],[-.5,-0.5],'k',alpha=1.0,linewidth=0.5)
                 ax[it,qi].plot([0,7],[.5,0.5],'k',alpha=1.0,linewidth=0.5)
@@ -140,7 +133,7 @@ for il, s in enumerate(fileList):
                 ax[it,qi].plot([17,24],[-4.5,-4.5],'k',alpha=1.0,linewidth=0.5)
                 ax[it,qi].plot([17,24],[-3.5,-3.5],'k',alpha=1.0,linewidth=0.5)
                 ax[it,qi].plot([24,24],[-3.5,-4.5],'k',alpha=1.0,linewidth=0.5)
-            if np.logical_or(it==1,it==3):
+            if np.logical_or(it==1,it==3): # Plot outline for L & L* maze types
                 ax[it,qi].plot([0,0],[.5,-0.5],'k',alpha=1.0,linewidth=0.5)
                 ax[it,qi].plot([0,7],[-.5,-0.5],'k',alpha=1.0,linewidth=0.5)
                 ax[it,qi].plot([0,7],[.5,0.5],'k',alpha=1.0,linewidth=0.5)
@@ -202,14 +195,14 @@ for mt,c in dictnc.items():
 for i, nm in enumerate(['First hall', 'Middle hall', 'Last hall']):
     ax[i].set_xlabel('virtual y-position')
     ax[i].set_title(nm)
-#    ax[i].set_xticks([-0.5,0.5], ('Left','Right'))
+    
 ax[0].set_ylabel('PDF')
 pl.setp(ax, xticks=[-0.5,0.5], xticklabels=['Left','Right'])
 
 pl.savefig(combinedResultDir+'fig_S2C_y_position_hist.pdf',format='pdf', dpi=300, bbox_inches = 'tight', pad_inches = 0.01)
 pl.close()
 
-#%% average speed by maze segment
+#%% Average speed by maze segment across all sessions
 
 spmask = np.array(all_speed > speedThresh)
 fhr = (all_places_cm < bd[0]) & spmask

@@ -37,7 +37,7 @@ fileList = [
     ]
 
 # Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+hdf5Dir = '/home/fetterhoff/Documents/graded_remapping_data/Graded_Remapping/'
 
 combinedResultDir = hdf5Dir+'waveform_stats/' # Save in subdirectory
 if not os.path.exists(combinedResultDir):
@@ -46,7 +46,6 @@ if not os.path.exists(combinedResultDir):
 pl.rcParams.update({'font.size': 6, 'xtick.labelsize':6, 'ytick.labelsize':6, 'legend.fontsize':6, 'axes.facecolor':'white', 'lines.linewidth': 1.25, 'lines.markersize': 2.0, 'axes.labelsize': 6, 'figure.titlesize' : 6, 'axes.titlesize' : 'medium'})
 
 iso_dist= np.array([])
-
 
 #%%
 for il, s in enumerate(fileList):

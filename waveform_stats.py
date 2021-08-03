@@ -17,7 +17,7 @@ import matplotlib.pyplot as pl
 import seaborn as sns
 
 # Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+hdf5Dir = r'/home/fetterhoff/Documents/graded_remapping_data/Graded_Remapping/'
 
 combinedResultDir = hdf5Dir+'waveform_stats/' # Save in subdirectory
 if not os.path.exists(combinedResultDir):
@@ -28,14 +28,13 @@ wavedf['neuron_type'] = 0
 fil=(wavedf.spike_ratio < 1.5)
 wavedf.loc[fil, 'neuron_type'] = 'INT'
 fil=(wavedf.spike_ratio >= 1.5)
-wavedf.loc[fil,'neuron_tpye'] = 'PC'
+wavedf.loc[fil,'neuron_type'] = 'PC'
 
+pl.rcParams.update({'font.size': 6, 'xtick.labelsize':6, 'ytick.labelsize':6, 'legend.fontsize':6, 'axes.facecolor':'white', 'lines.linewidth': 0.75, 'lines.markersize': 1.0, 'axes.labelsize': 6, 'figure.titlesize' : 6, 'axes.titlesize' : 'medium'})
 
 #%% scatter spike ratio vs firing rate
 
-pl.rcParams.update({'font.size': 6})
-
-ajp = sns.jointplot(x=wavedf.spike_ratio[wavedf.spike_ratio < 10],y=np.log10(wavedf.mfr[wavedf.spike_ratio < 10]),alpha=0.25,joint_kws={"s": 1}, height=2.2)
+ajp = sns.jointplot(x=wavedf.spike_ratio[wavedf.spike_ratio < 10],y=np.log10(wavedf.mfr[wavedf.spike_ratio < 10]),alpha=0.25,joint_kws={"s": 3}, height=2.2)
 yl1, yl2 = ajp.ax_joint.get_ylim()
 ajp.ax_joint.fill_between([0,1.5],yl1, yl2, facecolor='C1',alpha=0.2)
 ajp.ax_joint.fill_between([1.5,10],np.log10(5.0), yl2, facecolor='C1',alpha=0.2)

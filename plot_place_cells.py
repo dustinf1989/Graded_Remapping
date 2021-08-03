@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+
 This script generates Figure 1B-I and Fig. S3 in the manuscript
 "Graded Remapping of Hippocampal Ensembles under Sensory Conflicts" written by
 D. Fetterhoff, A. Sobolev & C. Leibold.
@@ -41,7 +42,7 @@ fileList = fileList
 speedThresh = 5 # cm/s, to discard spikes during stillness
 
 # Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+hdf5Dir = '/home/fetterhoff/Documents/graded_remapping_data/Graded_Remapping/'
 
 combinedResultDir = hdf5Dir+'place_cells/' # Save in subdirectory
 if not os.path.exists(combinedResultDir):
@@ -52,11 +53,11 @@ bd = [187.5, 275, 412.5, 500] # boundaries for all maze segments
 totalMazeLength = 620 # measured from the setup
 pl.rcParams.update({'font.size': 6, 'xtick.labelsize':6, 'ytick.labelsize':6, 'legend.fontsize':6, 'axes.facecolor':'white', 'lines.linewidth': 1.0, 'lines.markersize': 2.0})
 maze_type_color_dict = {1:'r', -1:'b', 2:'m', -2:'c'}
-numToTypeDict = {0 : 'None', 1: 'R', 2:'L', 3:'R*', 4:'L*', 5:'LR*-im', 6:'LL*-dir', 7:'swap*', 8:'og', 9:'RR*-dir', 10:'RL*-im', 11:'3pk', 12:'3pk', 13:'3pk', 14:'3pk', 15:'4pk'}
+numToTypeDict = {0 : 'None', 1: 'R', 2:'L', 3:'R*', 4:'L*', 5:'LR*-im', 6:'LL*-bend', 7:'swap*', 8:'og', 9:'RR*-bend', 10:'RL*-im', 11:'3pk', 12:'3pk', 13:'3pk', 14:'3pk', 15:'4pk'}
 
 minWindow = 4 # Number of adjacent peak bins to keep cell
 session_list, maze_seg_code = [], []
-toPlotAllNeurons = True
+toPlotAllNeurons = True # Set False to only plot population pie/bar graphs
 
 #%% Load data for each session
 for il, s in enumerate(fileList):
@@ -137,7 +138,7 @@ maze_seg_code = np.squeeze(np.array(maze_seg_code))
 typebinedges = np.arange(-.5, 17.5, 1)
 data0 = np.zeros([5, len(typebinedges)-2])
 segment_names = ['First Hallway', 'First Corner', 'Middle Hallway', 'Last Corner', 'Last Hallway']
-labels = ['Single maze', 'Original / Swap', 'Image', 'Direction', '3-4 Peaks'] # Field type labels
+labels = ['Single maze', 'Original / Swap', 'Image', 'Bend Type', '3-4 Peaks'] # Field type labels
 cl = ['C7', 'C8', 'C4', 'C1', 'C2'] # colors
 bW = 0.85 # Bar width
 r = range(5) # x-axis locations for bar plot
@@ -152,12 +153,12 @@ for i in range(5):
     single_maze_total = np.sum(output1[1:5])
     old_new_total = np.sum(output1[7:9])
     im_total = output1[5] + output1[10]
-    dir_total = output1[6] + output1[9]
+    bend_total = output1[6] + output1[9]
     peaks34_total = np.sum(output1[11:])
 
-    sizes = [single_maze_total, old_new_total, im_total, dir_total, peaks34_total]
+    sizes = [single_maze_total, old_new_total, im_total, bend_total, peaks34_total]
     ax[i].pie(sizes, colors=cl, autopct='%1.1f%%')
-    ax[i].set_title(segment_names[i], pad=-10)
+    ax[i].set_title(segment_names[i], pad=-10, fontsize=6)
 
     if i == 0:
         im_fh, rest_fh = im_total, output1[1:].sum()-im_total
@@ -167,19 +168,19 @@ for i in range(5):
         im_lh, rest_lh = im_total, output1[1:].sum()-im_total
 
 # Are there more image cells in the middle or last hallways compared to random (the first hallway)?
-# Fig. 1H legend
+# Stats are written in the Fig. 1H legend.
 ss.chisquare([im_fh, rest_fh], [im_mh, rest_mh])
 ss.chisquare([im_fh, rest_fh], [im_lh, rest_lh])
 
 ax[1].legend(labels, loc='upper left', bbox_to_anchor=(0.3, 0.83))
 
 # everything shifted one back because first row is removed
-df = pd.DataFrame({'RR*-dir' : data0[:, 8], 'LL*-dir' : data0[:, 5], 'RL*-im' : data0[:, 9], 'LR*-im' : data0[:, 4]})
+df = pd.DataFrame({'RR*-bend' : data0[:, 8], 'LL*-bend' : data0[:, 5], 'RL*-im' : data0[:, 9], 'LR*-im' : data0[:, 4]})
 
 # From raw value to percentage
-totals = [i+j+k+l for i, j, k, l in zip(df['RR*-dir'], df['LL*-dir'], df['RL*-im'], df['LR*-im'])]
-bars1 = [i for i in df['RR*-dir']]
-bars2 = [i for i in df['LL*-dir']]
+totals = [i+j+k+l for i, j, k, l in zip(df['RR*-bend'], df['LL*-bend'], df['RL*-im'], df['LR*-im'])]
+bars1 = [i for i in df['RR*-bend']]
+bars2 = [i for i in df['LL*-bend']]
 bars3 = [i for i in df['RL*-im']]
 bars4 = [i for i in df['LR*-im']]
 
@@ -194,7 +195,7 @@ pl.xticks(r, segment_names, rotation=60)
 ax[5].set_ylabel('Number of neurons')
 ax[5].spines['right'].set_visible(False)
 ax[5].spines['top'].set_visible(False)
-ax[5].legend(['RR*-dir', 'LL*-dir', 'RL*-im', 'LR*-im'], loc='upper right')
+ax[5].legend(['RR*-bend', 'LL*-bend', 'RL*-im', 'LR*-im'], loc='upper right')
 ax[5].set_xlim([-0.5, 4.5])
 ax[5].set_ylim([0, 95])
 ax[5].set_yticks(np.arange(0, 96, 5), minor=True)
@@ -223,22 +224,22 @@ for gid in gerbil_names:
         single_maze_total = np.sum(output1[1:5])
         old_new_total = np.sum(output1[7:9])
         im_total = output1[5] + output1[10]
-        dir_total = output1[6] + output1[9]
+        bend_total = output1[6] + output1[9]
         peaks34_total = np.sum(output1[11:])
 
-        sizes = [single_maze_total, old_new_total, im_total, dir_total, peaks34_total]
+        sizes = [single_maze_total, old_new_total, im_total, bend_total, peaks34_total]
 
         ax[i].pie(sizes, colors=cl)
-        ax[i].set_title(segment_names[i], pad=-5)
+        ax[i].set_title(segment_names[i], pad=-5, fontsize=6)
         ax[i].tick_params(labelbottom=False) # Required for negative title pad
 
-    # 5=LL*-dir, 9=RL*-im, 8=RR*-dir, 4=LR*-im # everything shifted one back because first row is removed
-    df = pd.DataFrame({'RR*-dir' : data0[:, 8], 'LL*-dir' : data0[:, 5], 'RL*-im' : data0[:, 9], 'LR*-im' : data0[:, 4]})
+    # 5=LL*-bend, 9=RL*-im, 8=RR*-bend, 4=LR*-im # everything shifted one back because first row is removed
+    df = pd.DataFrame({'RR*-bend' : data0[:, 8], 'LL*-bend' : data0[:, 5], 'RL*-im' : data0[:, 9], 'LR*-im' : data0[:, 4]})
 
     # From raw value to percentage
-    totals = [i+j+k+l for i, j, k, l in zip(df['RR*-dir'], df['LL*-dir'], df['RL*-im'], df['LR*-im'])]
-    bars1 = [i for i in df['RR*-dir']]
-    bars2 = [i for i in df['LL*-dir']]
+    totals = [i+j+k+l for i, j, k, l in zip(df['RR*-bend'], df['LL*-bend'], df['RL*-im'], df['LR*-im'])]
+    bars1 = [i for i in df['RR*-bend']]
+    bars2 = [i for i in df['LL*-bend']]
     bars3 = [i for i in df['RL*-im']]
     bars4 = [i for i in df['LR*-im']]
 
@@ -261,7 +262,7 @@ for gid in gerbil_names:
     ax[5].set_position(box)
 
     if gid == '0395':
-        ax[5].legend(['RR*-dir', 'LL*-dir', 'RL*-im', 'LR*-im'], loc='upper right')
+        ax[5].legend(['RR*-bend', 'LL*-bend', 'RL*-im', 'LR*-im'], loc='upper right')
         ax[1].legend(labels, loc='upper left', bbox_to_anchor=(0.3, 0.83))
 
     pl.savefig(combinedResultDir+'fig_S3_pieChartByGerbil_{}.pdf'.format(gid), format='pdf', bbox_inches='tight', pad_inches=0.01)

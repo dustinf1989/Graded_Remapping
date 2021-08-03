@@ -57,10 +57,10 @@ ibd = [np.abs(xCentersReal - b).argmin() for b in bd] # index of boundaries
 itmp = ibd[:]
 itmp.insert(0, 0)
 itmp.append(Nbins-1)
-iparts = [i+1 for i in itmp]
+iparts = [i+1 for i in itmp] # Indices for borders between maze segments
 
 # Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+hdf5Dir = '/home/fetterhoff/Documents/graded_remapping_data/Graded_Remapping/'
 
 combinedResultDir = hdf5Dir+'rate_remapping/' # Save in subdirectory
 if not os.path.exists(combinedResultDir):
@@ -73,7 +73,7 @@ df_count = pd.DataFrame([])
 
 pl.rcParams.update({'font.size': 6, 'xtick.labelsize':6, 'ytick.labelsize':6, 'legend.fontsize':6, 'axes.facecolor':'white', 'lines.linewidth': 1.25, 'lines.markersize': 2.0, 'axes.labelsize': 6, 'figure.titlesize' : 6, 'axes.titlesize' : 'medium'})
 
-#%%
+#%% Load all the data
 for il, s in enumerate(fileList):
     session = s[0]
     print(session) # current session
@@ -82,7 +82,7 @@ for il, s in enumerate(fileList):
 
     # Build a DataFrame using all tetrode (TT) files
     spikeDF = pd.DataFrame()
-    for mat_name in glob.glob(sd+'*TT*.mat'):
+    for mat_name in glob.glob(sd+'*TT*.mat'): # Data for each neuron
         m = loadmat(mat_name)
 
         frame = pd.DataFrame([[m['file'][0], m['times'][0], m['vr_x'][0], m['vr_y'][0], m['real_cm'][0], m['speed_cms'][0], m['lap_num'][0],
@@ -93,20 +93,21 @@ for il, s in enumerate(fileList):
         spikeDF = spikeDF.append(frame)
     spikeDF.sort_index(inplace=True)
 
-    f2 = sd+session+'_laps_traj.h5'
+    f2 = sd+session+'_laps_traj.h5' # Trajectory data
     trajDF = pd.read_hdf(f2, 'trj') # DataFrame of times/places/speed for each lap in VR
+    
     # LapsDF maze_type dictionary: {1:R, -1:L, 2: R*, -2: L*}
     lapsDF = pd.read_hdf(f2, 'lapsDF')
     lapsDB = np.array(lapsDF) # Keep values as matrix
 
-    f3 = sd+session+'_PCresultsDB.h5'
+    f3 = sd+session+'_PCresultsDB.h5' # Place field results data
     cellResultsDB = pd.read_hdf(f3, 'cellResultsDB')
 
     nPlaceFields = 0 # Count the number of place fields
     for i in spikeDF.FieldPeakLoc:
         nPlaceFields += len(i)
 
-    # Table S1
+    # Initialize Table S1
     sumN = pd.DataFrame({'session': session, 'nPlaceCells' : len(spikeDF), 'nPlaceFields' : nPlaceFields}, index=[il])
     df_count = pd.concat([df_count, sumN])
 
@@ -144,7 +145,7 @@ for il, s in enumerate(fileList):
                 peakRateCH = cDB.normRate[cDB.choice == ch].reset_index().iloc[idx].normRate
                 id1, id2 = np.max([idx-g, 0]), np.min([idx+g+1, 78]) # add one to g to get odd number of bins covered
 
-                meanRateCH = cDB.normRate[cDB.choice == ch].reset_index().iloc[id1:id2].normRate.mean()
+                # Save mean data in the 5 bins around each detected peak
                 meanRate1 = cDB.normRate[cDB.choice == 1].reset_index().iloc[id1:id2].normRate.mean()
                 meanRate_1 = cDB.normRate[cDB.choice == -1].reset_index().iloc[id1:id2].normRate.mean()
                 meanRate2 = cDB.normRate[cDB.choice == 2].reset_index().iloc[id1:id2].normRate.mean()
@@ -152,15 +153,16 @@ for il, s in enumerate(fileList):
 
                 dictPeak = pd.DataFrame({'gerbilID': session[:5], 'data': session[6:], 'cell_name' : spikeDF.file[cid],
                                          'cell_id' : cid, 'peakLocation' : cDB.XpositionReal[idx], 'peak_segment' : pf,
-                                         'peak_choice': ch, 'peak_rate_choice' : peakRateCH, 'mean_rate_choice' : meanRateCH,
+                                         'peak_choice': ch, 'peak_rate_choice' : peakRateCH,
                                          'mean1': meanRate1, 'mean-1' : meanRate_1, 'mean2' : meanRate2, 'mean-2' : meanRate_2}, index=[i])
                 df_peakComp_all = pd.concat([df_peakComp_all, dictPeak])
 
     #%% Measure Overlap
     win = [pc_mat1, pc_mat1, pc_mat1, pc_mat_1, pc_mat_1]
     qin = [pc_mat_1, pc_mat2, pc_mat_2, pc_mat2, pc_mat_2]
-    labelsqw = ['1_1', '12', '1_2', '_12', '_1_2']
+    labelsqw = ['1_1', '12', '1_2', '_12', '_1_2'] # LapsDF maze_type dictionary: {1:R, -1:L, 2: R*, -2: L*}
 
+    # Maze segment labels
     part_labels = ['fh_', 'fc_', 'mh_', 'lc_', 'lh_']
 
     # correlations done for each spatial bin, not each neuron
@@ -202,6 +204,8 @@ if plotSummary:
     #%% Peak comparison data to assess rate remapping
     df_ci_rateRemapping = pd.DataFrame([])
     choiceToMazeType = {1:'R', -1:'L', 2:'R*', -2:'L*'}
+    
+    # Fisher's Z https://medium.com/@shandou/how-to-compute-confidence-interval-for-pearsons-r-a-brief-guide-951445b9cb2d
     def r_to_z(r_):
         return np.log((1 + r_) / (1 - r_)) / 2.0
 
@@ -231,7 +235,6 @@ if plotSummary:
     pl.xlabel("Mean Rate (Hz) in surrounding 5 bins of other Maze-Type", labelpad=4)
 
     choiceList = [1, -1, 2, -2]
-    # Fisher's Z https://medium.com/@shandou/how-to-compute-confidence-interval-for-pearsons-r-a-brief-guide-951445b9cb2d
 
     for i, (rch, cch) in enumerate(it.product(choiceList, repeat=2)):
         ax[i].set(adjustable='box', aspect='equal')
@@ -338,7 +341,7 @@ if plotSummary:
     ax[10].set_xlabel('Overlap', fontsize=6); ax[11].set_xlabel('Overlap', fontsize=6); ax[12].set_xlabel('Overlap', fontsize=6)
     ax[13].set_xlabel('Overlap', fontsize=6); ax[14].set_xlabel('Overlap', fontsize=6)
 
-    # Directional cells
+    # Bend type cells
     obin = np.linspace(0, 1, 100)
     hds = ['fh_', 'fc_', 'mh_', 'lc_', 'lh_']
     titles = ['First Hallway', 'First Corner', 'Middle Hallway', 'Last Corner', 'Last Hallway']

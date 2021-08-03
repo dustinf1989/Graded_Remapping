@@ -85,7 +85,7 @@ colors = ('r', 'b', 'm', 'c') # Colors for each maze-type
 mazeSegList = ['Entire Maze', 'First  Hallway', 'First Corner', 'Middle Hallway', 'Last Corner', 'Last Hallway']
 
 # Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+hdf5Dir = '/home/fetterhoff/Documents/graded_remapping_data/Graded_Remapping/'
 
 # Create a results subfolder inside the data folder
 combinedResultDir = hdf5Dir+'mle_results_{}gamma/'.format(gamma) # Save in subdirectory

@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 
-This script generates all panels of Figure 4 and S4 in the manuscript
+This script generates all panels of Figures 4 and S4 in the manuscript
 "Graded Remapping of Hippocampal Ensembles under Sensory Conflicts" written by
 D. Fetterhoff, A. Sobolev & C. Leibold.
 
 To generate Fig. 4B without image cells, set toExcludeImageCells to True.
+To generate Fig. S4A-B, set simSwap to True.
+To generate Fig. S4C-D, set best6 to True.
 
 All analysis code was written by D. Fetterhoff
 
@@ -50,15 +52,15 @@ fileListSim = [
     ]
 
 # Load data from this folder
-hdf5Dir = '/home/fetterhoff/Graded_Remapping/'
+hdf5Dir = '/home/fetterhoff/Documents/graded_remapping_data/Graded_Remapping/'
 
 combinedResultDir = hdf5Dir+'pop_vec_analysis/' # Save in subdirectory
 if not os.path.exists(combinedResultDir):
     os.makedirs(combinedResultDir)
 
 toExcludeImageCells = False # Remove image cells, set True for Fig. 4B
-simSwap = False # Set True for Fig. S5A-B
-best6 = False # Set True for Fig. S5C-D
+simSwap = False # Set True for Fig. S4A-B
+best6 = False # Set True for Fig. S4C-D
 
 if simSwap:
     fileList = fileListSim
@@ -68,9 +70,9 @@ if best6: # Select sessions with the most place cells
 else:
     fileList = fileList
 
-# Need to double check this
+# Some maze parameters
 totalMazeLength = 620 # measured from the setup
-xBins = np.linspace(1, 24, 80) # old: np.arange(1,24,0.29) np.linspace(1,24,80)
+xBins = np.linspace(1, 24, 80) 
 xCenters = (xBins + np.diff(xBins)[0]/2)[:-1]
 Nbins = xBins.size -1
 xBinsReal = np.linspace(0, totalMazeLength, len(xBins))
@@ -81,7 +83,7 @@ ibd = [np.abs(xCentersReal - b).argmin() for b in bd] # index of boundaries
 itmp = ibd[:]
 itmp.insert(0, 0)
 itmp.append(Nbins-1)
-iparts = [i+1 for i in itmp]
+iparts = [i+1 for i in itmp] # Indices for borders between maze segments
 
 mazeTypeList = ['R', 'L', 'R*', 'L*']
 
@@ -385,7 +387,6 @@ axx[0].fill_between(xCentersReal, y3-sem3, y3+sem3, color='c', alpha=0.3)
 axx[0].set_ylim([-0.2, 1])
 axx[0].set_xlim([0, totalMazeLength])
 
-
 axx[1].plot(xCentersReal, y1, ':r', label='shuffled R')
 axx[1].fill_between(xCentersReal, y1-sem1, y1+sem1, color='r', alpha=0.3)
 axx[1].plot(xCentersReal, oe_mean_1, ':b', label='shuffled L')
@@ -404,9 +405,9 @@ if not toExcludeImageCells:
 if toExcludeImageCells:
     pl.savefig(combinedResultDir+'fig_4B_pop_vec_correlation_noImageCells.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
 elif simSwap:
-    pl.savefig(combinedResultDir+'fig_S5A_pop_vec_correlation.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+    pl.savefig(combinedResultDir+'fig_S4A_pop_vec_correlation.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
 elif best6:
-    pl.savefig(combinedResultDir+'fig_S5C_pop_vec_correlation.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+    pl.savefig(combinedResultDir+'fig_S4C_pop_vec_correlation.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
 else:
     pl.savefig(combinedResultDir+'fig_4A_pop_vec_correlation.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
 pl.close(fig)
@@ -472,7 +473,7 @@ if not (toExcludeImageCells or simSwap or best6): # Only do this is using 18 ses
             aq[ai].fill_between([bd[0], bd[1]], -.2, 1, facecolor='k', alpha=0.2)
             aq[ai].fill_between([bd[2], bd[3]], -.2, 1, facecolor='k', alpha=0.2)
 
-        pl.savefig(combinedResultDir+'fig_S5E_pop_vec_correlation_g{}.pdf'.format(gid), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+        pl.savefig(combinedResultDir+'fig_S4E_pop_vec_correlation_g{}.pdf'.format(gid), format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
         pl.close(fig)
 
 #%% Plot the matrix for the poulation vector correlation divided by maze segment
@@ -582,8 +583,8 @@ if (simSwap or best6):
         axw[i].grid(False)
 
     if simSwap:
-        pl.savefig(combinedResultDir+'fig_S5B_population_vector_correlation_bySegment_simSwap.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+        pl.savefig(combinedResultDir+'fig_S4B_population_vector_correlation_bySegment_simSwap.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
         pl.close()
     if best6:
-        pl.savefig(combinedResultDir+'fig_S5D_population_vector_correlation_bySegment_best6.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
+        pl.savefig(combinedResultDir+'fig_S4D_population_vector_correlation_bySegment_best6.pdf', format='pdf', dpi=300, bbox_inches='tight', pad_inches=0.05)
         pl.close()
