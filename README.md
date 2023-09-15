@@ -4,7 +4,7 @@ Python code to analyze data and create figures for the manuscript "Graded Remapp
 
 The data can be found at: https://gin.g-node.org/dfetterhoff/Graded_Remapping
 
-The dataset can be downloaded from a terminal with 'git clone https://gin.g-node.org/dfetterhoff/Graded_Remapping.git'
+The dataset can be downloaded from a terminal with `git clone https://gin.g-node.org/dfetterhoff/Graded_Remapping.git`
 
 All code was verified to work in Python 3.8.1 and 3.7.3. Make sure to change the path near the beginning of each script to your local path where you saved the data.
 
